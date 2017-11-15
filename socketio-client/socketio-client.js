@@ -103,7 +103,7 @@ module.exports = function(RED) {
       node.on('input', function(msg){
         node.socketId = msg.payload.socketId;
 
-        sockets[node.socketId].emit(n.name, JSON.parse(n.message || '{}') );
+        sockets[node.socketId].emit(n.name, msg.message || JSON.parse(n.message || '{}') );
 
       });
     }
