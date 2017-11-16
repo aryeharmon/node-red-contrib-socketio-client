@@ -1,3 +1,5 @@
+var Server = require('socket.io');
+
 module.exports = function(RED) {
   'use strict';
   //var io = require('socket.io-client');
@@ -18,7 +20,6 @@ module.exports = function(RED) {
       this.server.namespace = n.namespace;
       this.name = n.name;
       var node = this;
-
       
       if(sockets[node.id]){ delete sockets[node.id];}
       sockets[node.id] = connect(this.server);
@@ -127,4 +128,61 @@ module.exports = function(RED) {
 
   function disconnect(config) {
   }
+
+
+  function socketIoConfig(n) {
+    RED.nodes.createNode(this,n);
+    // node-specific code goes here
+    var node = this;
+    this.port = n.port || 80;
+    this.sendClient = n.sendClient;
+    this.path = n.path || "/socket.io";
+    this.bindToNode = n.bindToNode || false;
+    
+    if(this.bindToNode){
+      node.io = new Server(RED.server);
+    } else {
+      node.io = new Server();
+      node.io.serveClient(node.sendClient);
+      node.io.path(node.path);
+      node.io.listen(node.port);
+    }
+    var bindOn =  this.bindToNode ? "bind to Node-red port" : ("on port " + this.port);
+    node.log("Created server " + bindOn);
+    
+    node.on('close', function() {
+      //node.log("Closing server");
+      node.io.close();
+      //node.log("Closed server");
+    });
+    
+  }
+  
+  function socketIoIn(n) {
+    RED.nodes.createNode(this,n);
+    // node-specific code goes here
+    var node = this;
+    
+    this.server.io.on('connection', function(socket){
+      msg.socket = socket;
+      node.send(msg);
+    });
+  }
+  
+  function socketIoOut(n) {
+    RED.nodes.createNode(this,n);
+    // node-specific code goes here
+    var node = this;
+    this.name = n.name;
+    this.server = RED.nodes.getNode(n.server);
+    
+    node.on('input', function(msg) {
+      this.server.io.sockets.emit( msg.chanel || 'm', msg.payload);
+    });
+    
+  }
+  
+  RED.nodes.registerType("socketio-config",socketIoConfig);
+  RED.nodes.registerType("socketio-in",socketIoIn);
+  RED.nodes.registerType("socketio-out",socketIoOut);
 }
