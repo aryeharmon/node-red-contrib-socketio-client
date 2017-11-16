@@ -9,7 +9,7 @@ module.exports = function(RED) {
       this.host = n.host;
       this.port = n.port;
     }
-    RED.nodes.registerType('socketio-config', SocketIOConfig);
+    RED.nodes.registerType('socketio-client-config', SocketIOConfig);
 
   /* sckt connector*/
     function SocketIOConnector(n){
