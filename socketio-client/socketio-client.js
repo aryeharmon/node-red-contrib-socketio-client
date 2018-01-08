@@ -1,5 +1,3 @@
-var Server = require('socket.io');
-
 module.exports = function(RED) {
   'use strict';
   //var io = require('socket.io-client');
@@ -44,6 +42,7 @@ module.exports = function(RED) {
 
       this.on('close', function(done) {
         sockets[node.id].disconnect();
+        sockets[node.id].removeAllListeners();
         node.status({});
         done();
       }); 
@@ -76,19 +75,21 @@ module.exports = function(RED) {
         }
       });
 
-      node.on('close', function(done) {
-        
-        if( sockets[node.socketId].hasListeners(node.eventName) ){
-          sockets[node.socketId].removeListener(node.eventName, function(){
-            node.status({});
-            done();
-          });
-        }else{
-          node.status({});
-          done();
-        }
+      // node.on('close', function(done) {
+      //   if( sockets[node.socketId].hasListeners(node.eventName) ){
+      //     console.log(sockets[node.socketId].removeAllListeners, 'aaaaa');
+      //     sockets[node.socketId].removeListener(node.eventName, function(){
+      //   console.log(333333);
+      //       node.status({});
+      //       console.log(333333);
+      //       done();
+      //     });
+      //   } else{
+      //     node.status({});
+      //     done();
+      //   }
             
-      }); 
+      // }); 
     }
     RED.nodes.registerType('socketio-listener', SocketIOListener);
 
@@ -140,12 +141,12 @@ module.exports = function(RED) {
     this.bindToNode = n.bindToNode || false;
     
     if(this.bindToNode){
-      node.io = new Server(RED.server);
+      // node.io = new Server(RED.server);
     } else {
-      node.io = new Server();
-      node.io.serveClient(node.sendClient);
-      node.io.path(node.path);
-      node.io.listen(node.port);
+      // node.io = new Server();
+      // node.io.serveClient(node.sendClient);
+      // node.io.path(node.path);
+      // node.io.listen(node.port);
     }
     var bindOn =  this.bindToNode ? "bind to Node-red port" : ("on port " + this.port);
     node.log("Created server " + bindOn);
@@ -173,11 +174,12 @@ module.exports = function(RED) {
     RED.nodes.createNode(this,n);
     // node-specific code goes here
     var node = this;
+    var app = node.context().global.app;
+
     this.name = n.name;
-    this.server = RED.nodes.getNode(n.server);
-    
+
     node.on('input', function(msg) {
-      this.server.io.sockets.emit( msg.chanel || 'm', msg.payload);
+      app.io.sockets.emit( msg.chanel || 'm', msg.payload);
     });
     
   }
