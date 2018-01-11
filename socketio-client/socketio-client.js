@@ -179,7 +179,8 @@ module.exports = function(RED) {
     this.name = n.name;
 
     node.on('input', function(msg) {
-      app.io.sockets.emit( msg.chanel || 'm', msg.payload);
+      // app.io.sockets.emit( msg.chanel || 'm', msg.payload);
+      app.io.sockets.in(msg.payload.field).emit(msg.chanel || 'm', msg.payload);
     });
     
   }
