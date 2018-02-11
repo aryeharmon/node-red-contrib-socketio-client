@@ -18,10 +18,10 @@ module.exports = function(RED) {
       this.server.namespace = n.namespace;
       this.name = n.name;
       var node = this;
-      
+
       if(sockets[node.id]){ delete sockets[node.id];}
       sockets[node.id] = connect(this.server);
-        
+
       sockets[node.id].on('connect', function(){
         node.send({ payload:{socketId:node.id, status:'connected'} });
         node.status({fill:"green",shape:"dot", text:"connected"});
@@ -38,14 +38,14 @@ module.exports = function(RED) {
           node.send({payload:{socketId:node.id, status:'disconnected'}});
           //node.error(err);
         }
-      }); 
+      });
 
       this.on('close', function(done) {
         sockets[node.id].disconnect();
         sockets[node.id].removeAllListeners();
         node.status({});
         done();
-      }); 
+      });
     }
     RED.nodes.registerType('socketio-connector', SocketIOConnector);
 
@@ -88,8 +88,8 @@ module.exports = function(RED) {
       //     node.status({});
       //     done();
       //   }
-            
-      // }); 
+
+      // });
     }
     RED.nodes.registerType('socketio-listener', SocketIOListener);
 
@@ -117,7 +117,7 @@ module.exports = function(RED) {
 
     if(config.port != ''){
       uri += ':' +  config.port;
-    } 
+    }
     if(config.namespace){
       uri += '/' +  config.namespace;
       sckt = require('socket.io-client').connect( uri );
@@ -139,7 +139,7 @@ module.exports = function(RED) {
     this.sendClient = n.sendClient;
     this.path = n.path || "/socket.io";
     this.bindToNode = n.bindToNode || false;
-    
+
     if(this.bindToNode){
       // node.io = new Server(RED.server);
     } else {
@@ -150,26 +150,26 @@ module.exports = function(RED) {
     }
     var bindOn =  this.bindToNode ? "bind to Node-red port" : ("on port " + this.port);
     node.log("Created server " + bindOn);
-    
+
     node.on('close', function() {
       //node.log("Closing server");
       node.io.close();
       //node.log("Closed server");
     });
-    
+
   }
-  
+
   function socketIoIn(n) {
     RED.nodes.createNode(this,n);
     // node-specific code goes here
     var node = this;
-    
+
     this.server.io.on('connection', function(socket){
       msg.socket = socket;
       node.send(msg);
     });
   }
-  
+
   function socketIoOut(n) {
     RED.nodes.createNode(this,n);
     // node-specific code goes here
@@ -182,12 +182,12 @@ module.exports = function(RED) {
       if (msg.payload.force) {
         app.io.sockets.emit( msg.chanel || 'm', msg.payload);
       } else {
-        app.io.sockets.in(msg.payload.field).emit(msg.chanel || 'm', msg.payload);
+        app.io.to(msg.payload.field).emit(msg.chanel || 'm', msg.payload);
       }
     });
-    
+
   }
-  
+
   RED.nodes.registerType("socketio-config",socketIoConfig);
   RED.nodes.registerType("socketio-in",socketIoIn);
   RED.nodes.registerType("socketio-out",socketIoOut);
