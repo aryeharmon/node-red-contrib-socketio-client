@@ -153,7 +153,7 @@ module.exports = function(RED) {
 
     node.on('close', function() {
       //node.log("Closing server");
-      node.io.close();
+      // node.io.close();
       //node.log("Closed server");
     });
 
@@ -180,15 +180,54 @@ module.exports = function(RED) {
 
     node.on('input', function(msg) {
       if (msg.payload.force) {
-        app.io.sockets.emit( msg.chanel || 'm', msg.payload);
+        app.ioemitter.emit( msg.chanel || 'm', msg.payload);
       } else {
-        app.io.to(msg.payload.field).emit(msg.chanel || 'm', msg.payload);
+        var room = msg.payload.room;
+        delete msg.payload.room;
+
+        app.io.to(room || msg.payload.field).emit(msg.chanel || 'm', msg.payload);
       }
     });
 
   }
 
+  function socketIoEvent(n) {
+    // node-specific code goes here
+    var node = this;
+    var app = node.context().global.app;
+
+    this.name = n.name;
+
+    node.on('input', function(msg) {
+      app.eventEmitter.on(event, event, socket.request.user);
+    });
+
+  }
+
+  function socketIoEvent(config) {
+      RED.nodes.createNode(this, config);
+      var node = this;
+
+      var app = node.context().global.app;
+
+      var event_callback = function(data, user) {
+        var msg = {};
+        msg.payload = data;
+        msg.user = user;
+        node.send(msg)
+      };
+
+      var event = app.eventEmitter.on(config.namespace, event_callback);
+
+      node.on('close', function(done) {
+        app.eventEmitter.removeListener(config.namespace, event_callback);
+        done();
+      });
+  }
+
+
   RED.nodes.registerType("socketio-config",socketIoConfig);
   RED.nodes.registerType("socketio-in",socketIoIn);
   RED.nodes.registerType("socketio-out",socketIoOut);
+  RED.nodes.registerType("socketio-event",socketIoEvent);
 }
