@@ -1,4 +1,37 @@
 <!-- Config -->
+
+<script type="text/javascript">
+    RED.nodes.registerType('socketio-event',{
+        category: 'input',
+        defaults: {
+            name: {value:""},
+            namespace: {value:""},
+        },
+        inputs:0,
+        outputs:1,
+        color: "#D8BFD8",
+        icon: "socketio.png",
+        label: function() {
+            return this.name||"socketio-event";
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="socketio-event">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-namespace"><i class="icon-tag"></i> Namespace</label>
+        <input type="text" id="node-input-namespace" placeholder="Namespace">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="socketio-event">
+    <p>A simple node that triggers by socket io event, returns msg.payload -> data, msg.user -> user obj</p>
+</script>
+
   <script type="text/javascript">
     "use strict";
     /*global RED*/
@@ -319,7 +352,7 @@
     icon: "bridge.png",
     label: function(){
       return this.name || "SocketIO OUT";
-    }   
+    }
     });
 </script>
 
