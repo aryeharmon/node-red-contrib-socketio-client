@@ -163,8 +163,11 @@ module.exports = function(RED) {
     RED.nodes.createNode(this,n);
     // node-specific code goes here
     var node = this;
+    
+    var app = node.context().global.app;
 
-    this.server.io.on('connection', function(socket){
+    app.io.on('connection', function(socket){
+      var msg = {};
       msg.socket = socket;
       node.send(msg);
     });
